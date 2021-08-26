@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  redis:
+    image: redis:latest
+    container_name: nest-redis
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=Wy4wfLdRxLPz5274eNKVmWSn
+    ports:
+      - '127.0.0.1:6379:6379'
+    networks:
+      - nest_app
+  mongodb:
+    image: mongo:latest
+    container_name: nest-database
+    volumes:
+      - mongodata:/data/db
+    depends_on:
+      - redis
+    env_file:
+      - ./env/mongodb.env
+    ports:
+      - '127.0.0.1:27017:27017'
+    networks:
+      - nest_app
+    command: mongod
+  nestjs-backend:
+    build:
+      dockerfile: Dockerfile
+    container_name: nestjs_backend
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - nest_app
+    tty: true
+    volumes:
+      - ./:/app
+networks:
+  nest_app:
+volumes:
+  mongodata:
